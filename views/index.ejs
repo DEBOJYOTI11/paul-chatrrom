@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+   <% include /partials/head %>
+<body>
+
+<div class="container-fluid">
+      
+      <!-- <% include /partials/navbar %> -->
+    <div class="row">
+
+    <div class="col s3 sidebar">
+        <div id="navbar">
+        <a href="/"><button class="btn btn-primary">Paul chatRoom</button></a><hr/>
+        <a href="/admin"><button class="btn btn-primary">Admin</button></a>
+        </div>
+
+        <footer id="copyright">
+            <p>&copy; &nbsp;Debojyoti Paul | 2017 </p>
+        </footer>
+    </div>
+    <div clas="col-s9">
+        
+        
+        <div class="col s12 m3 stupid">
+        <div id="main">
+        
+            <span class="card-title">Sessions available</span>
+            <p>Choose a seesion where you want to join: </p>
+           
+            <div class="card-action">
+            <ul class="collection" id="availableSess">
+                <% sessions.forEach(function(online){%>
+                
+                        <li class="collection-item">
+                        <img src="http://events.ie.edu/Areas/WTE/Content/Img/Events/Future/Informative-events_ico400.png" id="thumbnail">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<%= online.session_name %> 
+                        </li>
+                    
+                <% }); %>
+            </ul>
+            </div>
+        </div>
+        
+     
+
+
+      <div id="accessCard">
+        <div class="card-action">
+          <div id="error"></div>
+          <div id="showsess"></div>
+          <form>
+              <label>Enter the key to join the session : </label>
+              <input type="hidden" name="SessN" id="SessN" value="">
+              <input type="password" id = "Passwd" placeholder="Session password..."/>
+              <button type="button" class="btn btn-success" onclick="Auth()">Join</button>
+          </form>
+      </div>
+      </div> 
+      </div>
+
+    </div>
+    </div>
+
+
+
+
+
+
+
+<script type="text/javascript">
+function strip(str) {
+        return str.replace(/^\s+|\s+$/g, '');
+    }
+
+function getcookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+      $("#accessCard").hide();
+
+
+function Auth(){
+          
+          let p = $('#Passwd');
+          let s = $('#SessN');
+          $('#showsess').append(s.val());
+          console.log(p.val(),s.val());
+
+          if(p.val() && s.val()){
+              $.post("/authenticate",
+              {
+              'session_name': strip(s.val()),
+              'password': strip(p.val())
+              },
+              function(data){
+                console.log(data);
+                  if(data.success){
+                     //console.log(document.cookie);
+                     var call;
+                     if(getcookie(s.val()))
+                        call = "/session/"+s.val()+"?token="+getcookie(strip(s.val()));
+                     else{
+                        msg ="<p>$.cookie not found</p>";
+                        $('#error').append(msg); 
+                     }
+                     console.log(call);
+                     window.location.href = call;
+                  }else{
+                      msg  = "<p>password incorrect</p>";
+                      $('#error').append(msg);
+                  }
+              }
+              );
+          }
+        }
+
+
+      $("#availableSess").on("click", "li", function(event){
+              
+              let clicked = strip($(this).text());
+              $('#showsess').val(clicked);
+              console.log("S ",clicked);
+              $("#SessN").val(clicked);
+              $('#showsess').val(clicked);
+            
+            console.log(clicked);
+               if(!getcookie(clicked)){
+                   $('#accessCard').show();
+                   $('#accessCard').focus();
+                }
+              else{
+                  window.location.href="/session/"+clicked+"?token="+getcookie(clicked);
+              }
+            });
+
+      
+
+</script>
+
+<script type="text/javascript">(function () { window.__Bottr = { u: "59e186cf04508c58c09024c9" }; var url = "https://d279m54f1qquet.cloudfront.net/embed/bottr.js?" + Date.now(); var element = document.createElement("script"); element.id = "bottr-init-js"; element.type = "text/javascript"; element.dataset.cfasync = "false"; element.src = url; document.getElementsByTagName("body")[0].appendChild(element); })();</script>
+</body>
+
+</html>

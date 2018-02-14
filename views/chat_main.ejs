@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+   <% include /partials/head %>
+<body>
+<p style="display:none" id="SessionName"><%= livesess %></p>
+<div class="container-fluid">
+
+  <div class="row">
+
+    <!-- Side bar -->
+    <div class="col s3 sidebar">
+      
+        <h3 id="logo">Paul ChatRoom<h3> 
+        
+        <div id="SessionNameDIsplay">
+        <h5>Live session</h5>
+        <h3 id="livesession">
+          <%= livesess %>
+        </h3>
+        </div>
+        <button class="btn waves-effect waves-light red cli" id="exitsess">
+          <h6>Exit Session </h6>&nbsp;
+        </button><br>
+        <button class="btn waves-effect waves-light red cli" id="exitsess">
+          <a href="/"><h6>Go home </h6></a>
+        </button>
+    </div>
+
+    <!-- end of sidebar -->
+
+    <!-- main body -->
+  
+    <div class="col s7 chatbar overflow">
+
+    
+      <div class="row">
+
+          <!-- top drawer -->
+            <div  class="col s12">
+              <ul class="tabs">
+                <li class="tab col s1">
+                  <a class="active" href="#main">Broadcast Messages</a>
+                </li>
+                <li class="tab col s1">
+                  <a href="#personal">Personal messages</a>
+                </li>
+              </ul>
+            </div>
+
+          <!-- end of top drawer -->
+
+        <!-- Broadcast message body  -->
+
+          <div id="main" class="col s12">
+            
+              <div>
+              <!-- Message displayed here -->
+              <div id="message-container" class=" card">
+            
+                <!-- <div class="card-reveal"></div> -->
+            
+              </div>
+              <!-- end of message display area -->
+            
+
+              <!-- Set username here  -->
+              <div id="name" class="input-field col s12 mandatory">
+
+                <p class="error">You must acquire a username </p>
+                <form class="form">
+              
+                  <input type="text" class="validate" id="user_name" placeholder="Enter your name!">
+                  <button type="button" class="btn btn-primary" name="button" onclick="setUsername()">I want to join!</button>
+                </form>
+              </div>
+              </div>
+
+              <!-- End of set username here  -->
+
+              <!-- Message send form here -->
+              <div class="footer">
+                <div id="msg">
+                    <form class="form">
+                    <div class="row">
+                      <div class="input-field col s6">
+                          <i class="material-icons prefix">account_circle</i>
+                          <input type="text" class="validate" id="message">
+                      </div>
+                      <div class="col s6">
+                          <button type="button" class="btn btn-primary" name="button" onclick="sendMessage()">
+                            <i class="material-icons right">send</i>Send</button>
+                          <button type="button" class="btn btn-danger btn-sm" name="button" onclick="logout()">Logout</button>
+                      </div> 
+                      </div>
+                      </form>
+                  </div>
+                    
+                </div>
+                <!-- end of message send body  -->
+            
+              </div>
+            <!-- end of broadcast message body  -->
+
+            <!-- Private message body -->
+          
+            <div id="personal" class="col s12">
+              <ul class="collection" id="Personal_chat">
+                <!-- <li class="colelction-header">
+                  <h4>Private messages</h4>
+                </li> -->
+              </ul>
+            
+            
+            
+              <div id="private" class="footer">
+                <form>
+                  <input type="text" placeholder="Message..." id="message_p" />
+                  <input type="text" placeholder="Recepient..." id="recep_p" />
+                  <button type="button" class="btn btn-primary" name="button" onclick="sendPrivateMessage()">Send</button>
+                </form>
+              </div>
+            </div>
+            <!-- End of privat message body  -->
+
+          </div>
+    </div>
+    <!-- End of main body  -->
+      
+    
+    <!-- Start of end bar  -->
+    <div class="col s2 leftbar chatbar">
+        <div id="liveusers" class="">
+                    <p id="onlinelogo">Online users</p>
+                    <ul class="collection" id="displayOnlineUsers">
+                        <li "collection-item">No one ... :(</li>
+                    </ul>
+                  </div>
+                  
+                  <div id="infoBox">              
+                            <p id="welcome"><br></p>
+                   
+                  
+                            <p id = "error-container"></p>
+                  </div>
+                  
+
+    </div>
+
+    <!-- End of left bar -->
+</div>
+</div>
+    
+
+
+   <script src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <!-- <script type="JavaScript" src="js/default.js"></script> -->
+  <script>
+
+    // $(document).ready(function () {
+    //     $('ul.tabs').tabs({
+    //       swipeable: true,
+    //       responsiveThreshold: 1920
+    //     });
+        
+    //   });
+  
+      // const sessName = document.getElementById("livesession").innerHTML;
+const sessName =  document.getElementById("SessionName").textContent;
+        console.log("(INFO) Live session is ", sessName);
+
+let countMessages=0;
+
+var messages = [];
+function message_format(data) {
+
+          let d = data.time;
+          if(!data.user)
+            data.user  = "Logged Out user!";
+          
+          d = moment(data['time']).fromNow();
+
+          // return "<div id=\"indiviualMessage\">" +
+          //    "<img id=\"thumbnail\" src=\"https://cdn4.iconfinder.com/data/icons/kids-2/128/kids_kid_boy-512.png\">&nbsp;&nbsp" +
+          //    "<strong>" + data.user + "&nbsp;|&nbsp;</strong>" +
+          //    "<span class=\"blue-text text-darken-2\">" + data.message + "</span>" +
+          //    "<span class=\"right-align time\">" + d + "</span>" +
+          //    "</div><hr/>";
+
+             return `<div class="row">`+
+                      `<div class="col s3"><img id="thumbnail" src="https://cdn4.iconfinder.com/data/icons/kids-2/128/kids_kid_boy-512.png">&nbsp;&nbsp
+                      <strong>${data.user}&nbsp;|&nbsp;</strong></div>
+
+                      <div class="col s6"><span class="blue-text text-darken-2">${data.message}</span></div>
+                      <div class="col s3">${d}</div>
+                      </div>
+                      <hr>`;
+
+
+};
+
+function format_private_message(data) {
+           let d = data.time;
+           if (!data.user)
+            data.user = "Logged Out user!";
+
+          d = moment(data['time']).fromNow();
+          return `<div class="row">` +
+    `<div class="col s3"><img id="thumbnail" src="https://cdn4.iconfinder.com/data/icons/kids-2/128/kids_kid_boy-512.png">&nbsp;&nbsp
+                      <strong>${data.user}&nbsp;|&nbsp;</strong></div>
+
+                      <div class="col s6"><span class="blue-text text-darken-2">${data.message}</span></div>
+                      <div class="col s3">${d}</div>
+                      </div>
+                      <hr>`;
+        }
+
+function setUsername() {
+          var u = document.getElementById('user_name');
+          console.log("In setUsername ", u.value);
+          if (u.value) {
+            data = { name: u.value, password: 'debo', sess: sessName }
+            socket.emit('setUsername', data);
+            u.value = "";
+          }
+          else
+            document.getElementById('error-container').innerHTML = "Enter valid Username<br>";
+          //should get messages here
+};
+
+        //console.log(window.location.hostname);
+var socket = io.connect();
+var user;
+
+  socket.on('userExists', function (data) {
+          document.getElementById('error-container').innerHTML = data;
+  });
+
+  socket.on('userSet', function (data) {
+          console.log("Confirmed username!");
+          user = data.username;
+
+          var welcome = document.getElementById('welcome');
+
+          welcome.style.display = "block";
+          welcome.innerHTML = "<p>welcome " + user + "</p>";
+
+          document.getElementById("msg").style.display = "block";
+          document.getElementById("name").style.display = "none";
+          let change= document.getElementsByClassName("chatbar");
+          for (let index = 0; index < change.length; index++) {
+            change[index].style.pointerEvents = "auto";
+            
+          }
+    });
+
+function sendPrivateMessage() {
+          m = document.getElementById("message_p");
+          r = document.getElementById("recep_p");
+          if (m.value && r.value && r.value != user) {
+            data = { "message": m.value, "user": user, "recep": r.value, "time": Date(), "sess": sessName }
+            socket.emit("perr_msg", data);
+            console.log("Send private message to ", r.value, " from ", m.value);
+            m.value = "";
+            r.value = "";
+          }
+          m.value = "";
+          r.value = "";
+
+
+        }
+
+function sendMessage() {
+          var msg = document.getElementById('message').value;
+
+          document.getElementById('message').value = "";
+          console.log("SendMessage" + msg);
+          if (msg) {
+
+            socket.emit('msg', { message: msg, user: user, time: Date(), sess: sessName });
+          }
+        };
+
+        function logout() {
+          var okToRefresh = confirm("Sure wana logout?");
+          if (okToRefresh) {
+            //setTimeout("location.reload(true);",1500);
+            location.reload(true);
+          }
+};
+
+
+socket.on('liveuser', function (data) {
+          var live = document.getElementById("displayOnlineUsers");
+
+          //console.log(data.allusers);
+          let temp = "";
+          //var temp = "<li class=\"collection-header\">Online users</li>";
+          for (var i = 0; i < data.allusers.length; i++) {
+            temp += "<li class=\"collection-item\">" +
+
+                    "<img id=\"thumbnail\" src=\"https://cdn4.iconfinder.com/data/icons/kids-2/128/kids_kid_boy-512.png\">&nbsp;&nbsp;"+
+                    data.allusers[i].user_name + 
+                    "</li>";
+          }
+          if(!temp)
+           temp  = "<li \"collection-item\" > No one ... : (</li >";
+          live.innerHTML = temp;
+
+        });
+
+socket.on('initialize', function (data) {
+          console.log("Inidtialization data : ", data);
+          data.forEach(function (d) {
+            //document.getElementById('message-container').innerHTML += message_format(d);
+            messages.unshift(message_format(d));
+            document.getElementById('message-container').innerHTML += message_format(d);
+          });
+          
+
+        });
+
+socket.on('newmsg', function (data) {
+          console.log("User : " + user + " New message " + data.message + " from " + data.user);
+          if (user) {
+            messages.unshift(message_format(data));
+            let count=1;
+            messages.forEach(function(m){
+              if(count==1)
+                document.getElementById('message-container').innerHTML = m;
+              else
+                document.getElementById('message-container').innerHTML += m;
+              count+=1;
+            });
+            
+          }
+        });
+
+ function format_primate_message(data) {
+          return "<li class=\"collection-item\">" + data.message + '|' + data.sender + ' | ' + data.time + "</li>";
+        }
+        socket.on('private_message', function (data) {
+
+          console.log("Message from ", data.user, " | Me = ", data.recep, " | message ", data.message);
+
+
+          document.getElementById("Personal_chat").innerHTML += format_primate_message(data);
+        });
+
+socket.on('private_message_initialize', function (data) {
+          data.forEach(function (d) {
+            document.getElementById("Personal_chat").innerHTML += format_primate_message(d);
+          })
+        });
+
+socket.on('ErrorLine', function (data) {
+          //console.log('Server unavialable. Please reconnect later');
+
+          let addon = "&nbsp;&nbsp;"
+          document.getElementById('error-container').innerHTML += addondata.status;
+        });
+
+
+$("#exitsess").on('click', function () {
+         // let l = document.getElementById("livesession").innerHTML;
+        l  = sessName;
+          console.log('session exit ', l);
+          let call = '/session/endSession/' + l + '?token=' + $.cookie(l);
+          console.log(call);
+          $.get(call, function (data) {
+            console.log(data);
+            if (data.status == '400') {
+              window.location.href = "/";
+            }
+          });
+        });
+      
+</script>
+</body>
+
+</html>
+
