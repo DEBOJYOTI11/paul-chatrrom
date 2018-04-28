@@ -1,9 +1,12 @@
 
 # Chatapp
 
-An Broadcast multiuser chatapp build with NodeJs and SOcket.io. Users can join the system with a passkey and after that can gain a unique username and send messages both broadcast and private. 
+An Broadcast multiuser chat application build with NodeJs and Socket.io. 
+Users can join the app with a passkey and after that can gain a unique username and send messages both broadcast and private. 
 
 * At any moment list of online users can be seen.
+* Include features to send a private message to a user along with broadcast.
+
 
 ## Getting Started
 
@@ -14,6 +17,11 @@ Modify the mod/config.js file with your mongodb url,if you are running locally o
 * NodeJs
 * npm
 * MongoDb
+
+### Mojor Dependencies
+* JWt
+* Socket.io
+* Express.JS
 
 ### Installing
 
@@ -32,7 +40,7 @@ To deploy on Heroku
 * [ExpressJs](#) - The web framework used
 * [Socket.io](#) - Dependency for socket connection
 * [MongoDB](#) - for persisting chat and user info
-* Material CSS](#) - For UI purpose
+* [Material CSS](#) - For UI purpose
 
 
 ## Authors
